@@ -1,20 +1,18 @@
 %define modn c_icap
 %define name c-icap
-%define ver  0.4.4
+%define ver  0.6.4
 
 Summary         : An implementation of an ICAP server
 Name            : %{name}
 Version         : %{ver}
 Release         : 1%{?dist}%{?pext}
 License         : LGPLv2+
-Group           : System Environment/Daemons
 URL             : http://%{name}.sourceforge.net/
 Source0         : http://downloads.sourceforge.net/project/%{name}/%{name}/0.2.x/%{modn}-%{ver}.tar.gz
 Source1         : etc---logrotate.d---c-icap
 Source2         : etc---sysconfig---c-icap.sysconfig
 Source3         : etc---tmpfiles.d---c-icap.conf
 Source4         : usr---lib---systemd---system---c-icap.service
-Buildroot       : %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires        : %{name}-libs = %{version}-%{release}
 Requires(pre)   : /usr/sbin/groupadd /usr/sbin/useradd
 Requires(post)  : /bin/systemctl
@@ -31,7 +29,6 @@ the open source Squid 3.x proxy server supports it too.
 
 %package devel
 Summary         : Development tools for %{name}
-Group           : Development/Libraries
 Requires        : %{name}-libs = %{version}-%{release}
 Requires        : zlib-devel
 
@@ -41,7 +38,6 @@ developing software using c-icap.
 
 %package ldap
 Summary         : The LDAP module for %{name}
-Group           : System Environment/Libraries
 Requires        : %{name} = %{version}-%{release}
 
 %description ldap
@@ -49,7 +45,6 @@ The c-icap-ldap package contains the LDAP module for c-icap.
 
 %package libs
 Summary         : Libraries used by %{name}
-Group           : System Environment/Libraries
 
 %description libs
 The c-icap-libs package contains all runtime libraries used by c-icap and the
@@ -57,7 +52,6 @@ utilities.
 
 %package perl
 Summary         : The Perl handler for %{name}
-Group           : System Environment/Libraries
 Requires        : %{name} = %{version}-%{release}
 
 %description perl
@@ -65,7 +59,6 @@ The c-icap-perl package contains the Perl handler for c-icap.
 
 %package bin
 Summary         : Related programs for %{name}
-Group           : Applications/Internet
 Requires        : %{name}-libs = %{version}-%{release}
 
 %description bin
@@ -93,7 +86,6 @@ LIBS="-lpthread"; export LIBS
 %{__make} %{?_smp_mflags}
 
 %install
-[ -n "${RPM_BUILD_ROOT}" -a "${RPM_BUILD_ROOT}" != "/" ] && %{__rm} -rf ${RPM_BUILD_ROOT}
 %{__mkdir_p} ${RPM_BUILD_ROOT}%{_sbindir}
 %{__mkdir_p} ${RPM_BUILD_ROOT}%{_datadir}/%{modn}/{contrib,templates}
 %{__mkdir_p} ${RPM_BUILD_ROOT}%{_localstatedir}/log/%{name}
@@ -152,11 +144,7 @@ fi
 %postun libs
 /sbin/ldconfig
 
-%clean
-[ -n "${RPM_BUILD_ROOT}" -a "${RPM_BUILD_ROOT}" != "/" ] && %{__rm} -rf ${RPM_BUILD_ROOT}
-
 %files
-%defattr(-,root,root)
 %doc AUTHORS COPYING INSTALL README TODO
 %attr(750,root,%{name}) %dir %{_sysconfdir}/%{name}
 %attr(640,root,%{name}) %config(noreplace) %{_sysconfdir}/%{name}/*.conf
@@ -180,7 +168,6 @@ fi
 %attr(750,%{name},%{name}) %dir %{_localstatedir}/run/%{name}
 
 %files devel
-%defattr(-,root,root)
 %{_bindir}/%{name}-*config
 %{_includedir}/%{modn}
 %{_libdir}/libicapapi.*a
@@ -196,20 +183,16 @@ fi
 %{_mandir}/man8/%{name}-*config.8*
 
 %files ldap
-%defattr(-,root,root)
 %{_libdir}/%{modn}/ldap_module.so
 
 %files libs
-%defattr(-,root,root)
 %doc COPYING
 %{_libdir}/libicapapi.so.*
 
 %files perl
-%defattr(-,root,root)
 %{_libdir}/%{modn}/perl_handler.so
 
 %files bin
-%defattr(-,root,root)
 %{_bindir}/%{name}-client
 %{_bindir}/%{name}-mkbdb
 %{_bindir}/%{name}-stretch
@@ -218,6 +201,10 @@ fi
 %{_mandir}/man8/%{name}-stretch.8*
 
 %changelog
+* Fri Apr 24 2026 CasjaysDev <rpm-devel@casjaysdev.pro> - 0.6.4-1
+- Update to 0.6.4
+- Modernize spec for AlmaLinux 10; remove Buildroot, Group, %clean, %defattr
+
 * Thu Mar 16 2017 Marcin Skarbek <rpm@skarbek.name> - 0.4.4-1
 - Update to 0.4.4
 
