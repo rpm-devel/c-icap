@@ -1,6 +1,6 @@
-%define modn c_icap
-%define name c-icap
-%define ver  0.6.4
+%global modn c_icap
+%global name c-icap
+%global ver  0.6.4
 
 Summary         : An implementation of an ICAP server
 Name            : %{name}
@@ -86,28 +86,28 @@ LIBS="-lpthread"; export LIBS
 %{__make} %{?_smp_mflags}
 
 %install
-%{__mkdir_p} ${RPM_BUILD_ROOT}%{_sbindir}
-%{__mkdir_p} ${RPM_BUILD_ROOT}%{_datadir}/%{modn}/{contrib,templates}
-%{__mkdir_p} ${RPM_BUILD_ROOT}%{_localstatedir}/log/%{name}
+%{__mkdir_p} %{buildroot}%{_sbindir}
+%{__mkdir_p} %{buildroot}%{_datadir}/%{modn}/{contrib,templates}
+%{__mkdir_p} %{buildroot}%{_localstatedir}/log/%{name}
 
 %{__make} \
-  DESTDIR=${RPM_BUILD_ROOT} \
+  DESTDIR=%{buildroot} \
   install
 
-%{__mv}      -f      ${RPM_BUILD_ROOT}%{_bindir}/%{name} ${RPM_BUILD_ROOT}%{_sbindir}
+%{__mv}      -f      %{buildroot}%{_bindir}/%{name} %{buildroot}%{_sbindir}
 
-%{__mkdir_p}                      ${RPM_BUILD_ROOT}%{_sysconfdir}/logrotate.d
-%{__install} -m 0644 %{SOURCE1}   ${RPM_BUILD_ROOT}%{_sysconfdir}/logrotate.d/%{name}
-%{__mkdir_p}                      ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig
-%{__install} -m 0644 %{SOURCE2}   ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig/%{name}
-%{__mkdir_p}                      ${RPM_BUILD_ROOT}%{_sysconfdir}/tmpfiles.d
-%{__install} -m 0644 %{SOURCE3}   ${RPM_BUILD_ROOT}%{_sysconfdir}/tmpfiles.d/%{name}.conf
-%{__mkdir_p}                      ${RPM_BUILD_ROOT}/usr/lib/systemd/system
-%{__install} -m 0644 %{SOURCE4}   ${RPM_BUILD_ROOT}/usr/lib/systemd/system/%{name}.service
+%{__mkdir_p}                      %{buildroot}%{_sysconfdir}/logrotate.d
+%{__install} -m 0644 %{SOURCE1}   %{buildroot}%{_sysconfdir}/logrotate.d/%{name}
+%{__mkdir_p}                      %{buildroot}%{_sysconfdir}/sysconfig
+%{__install} -m 0644 %{SOURCE2}   %{buildroot}%{_sysconfdir}/sysconfig/%{name}
+%{__mkdir_p}                      %{buildroot}%{_sysconfdir}/tmpfiles.d
+%{__install} -m 0644 %{SOURCE3}   %{buildroot}%{_sysconfdir}/tmpfiles.d/%{name}.conf
+%{__mkdir_p}                      %{buildroot}/usr/lib/systemd/system
+%{__install} -m 0644 %{SOURCE4}   %{buildroot}/usr/lib/systemd/system/%{name}.service
 
-%{__install} -m 0755 contrib/*.pl ${RPM_BUILD_ROOT}%{_datadir}/%{modn}/contrib
+%{__install} -m 0755 contrib/*.pl %{buildroot}%{_datadir}/%{modn}/contrib
 
-%{__rm}      -f                   ${RPM_BUILD_ROOT}%{_libdir}/lib*.so.{?,??}
+%{__rm}      -f                   %{buildroot}%{_libdir}/lib*.so.{?,??}
 
 %pre
 if ! getent group  %{name} >/dev/null 2>&1; then
@@ -201,6 +201,9 @@ fi
 %{_mandir}/man8/%{name}-stretch.8*
 
 %changelog
+* Fri May 22 2026 CasjaysDev <rpm-devel@casjaysdev.pro> - 0.6.4-1
+- Fix spec violations: %global for constants, use %{buildroot}
+
 * Fri Apr 24 2026 CasjaysDev <rpm-devel@casjaysdev.pro> - 0.6.4-1
 - Update to 0.6.4
 - Modernize spec for AlmaLinux 10; remove Buildroot, Group, %clean, %defattr
