@@ -1,24 +1,25 @@
 %global modn c_icap
 %global name c-icap
-%global ver  0.6.4
+%global ver  0.6.5
+%global vermaj 0.6
 
 Summary         : An implementation of an ICAP server
 Name            : %{name}
 Version         : %{ver}
 Release         : 1%{?dist}%{?pext}
-License         : LGPLv2+
-URL             : http://%{name}.sourceforge.net/
-Source0         : http://downloads.sourceforge.net/project/%{name}/%{name}/0.2.x/%{modn}-%{ver}.tar.gz
+License         : LGPL-2.0-or-later
+URL             : https://c-icap.sourceforge.net/
+ExclusiveArch   : x86_64 aarch64
+Source0         : https://downloads.sourceforge.net/project/%{name}/%{name}/%{vermaj}.x/%{modn}-%{ver}.tar.gz
 Source1         : etc---logrotate.d---c-icap
 Source2         : etc---sysconfig---c-icap.sysconfig
 Source3         : etc---tmpfiles.d---c-icap.conf
 Source4         : usr---lib---systemd---system---c-icap.service
 Requires        : %{name}-libs = %{version}-%{release}
-Requires(pre)   : /usr/sbin/groupadd /usr/sbin/useradd
-Requires(post)  : /bin/systemctl
-Requires(preun) : /bin/systemctl
-Requires(postun): /bin/systemctl
+Requires(pre)   : shadow-utils
 BuildRequires   : db4-devel gdbm-devel openldap-devel perl-devel tar zlib-devel bzip2-devel pcre-devel
+BuildRequires   : systemd-rpm-macros
+%{?systemd_requires}
 Vendor          : Tsantilas Christos <chtsanti@users.sourceforge.net>
 
 %description
@@ -83,16 +84,14 @@ LIBS="-lpthread"; export LIBS
   --with-ldap
   #--enable-ipv6 # net.ipv6.bindv6only not supported
 
-%{__make} %{?_smp_mflags}
+%make_build
 
 %install
 %{__mkdir_p} %{buildroot}%{_sbindir}
 %{__mkdir_p} %{buildroot}%{_datadir}/%{modn}/{contrib,templates}
 %{__mkdir_p} %{buildroot}%{_localstatedir}/log/%{name}
 
-%{__make} \
-  DESTDIR=%{buildroot} \
-  install
+%make_install
 
 %{__mv}      -f      %{buildroot}%{_bindir}/%{name} %{buildroot}%{_sbindir}
 
@@ -122,30 +121,19 @@ fi
 exit 0 # Always pass
 
 %post
-if [ $1 -eq 1 ] ; then # Initial installation
-  /bin/systemctl daemon-reload >/dev/null 2>&1 || :
-  /bin/systemctl enable c-icap.service >/dev/null 2>&1 || :
-fi
-
-%post libs -p /sbin/ldconfig
+%systemd_post c-icap.service
 
 %preun
-if [ $1 -eq 0 ]; then # Remove
-  /bin/systemctl --no-reload disable c-icap.service >/dev/null 2>&1 || :
-  /bin/systemctl stop c-icap.service >/dev/null 2>&1 || :
-fi
+%systemd_preun c-icap.service
 
 %postun
-/bin/systemctl daemon-reload >/dev/null 2>&1 || :
-if [ $1 -ge 1 ]; then # Upgrade
-  /bin/systemctl try-restart c-icap.service >/dev/null 2>&1 || :
-fi
+%systemd_postun_with_restart c-icap.service
 
-%postun libs
-/sbin/ldconfig
+%ldconfig_scriptlets libs
 
 %files
-%doc AUTHORS COPYING INSTALL README TODO
+%license COPYING
+%doc AUTHORS INSTALL README TODO
 %attr(750,root,%{name}) %dir %{_sysconfdir}/%{name}
 %attr(640,root,%{name}) %config(noreplace) %{_sysconfdir}/%{name}/*.conf
 %attr(640,root,%{name}) %config(noreplace) %{_sysconfdir}/%{name}/*.magic
@@ -186,7 +174,7 @@ fi
 %{_libdir}/%{modn}/ldap_module.so
 
 %files libs
-%doc COPYING
+%license COPYING
 %{_libdir}/libicapapi.so.*
 
 %files perl
@@ -201,6 +189,12 @@ fi
 %{_mandir}/man8/%{name}-stretch.8*
 
 %changelog
+* Thu Jul 03 2026 CasjaysDev <rpm-devel@casjaysdev.pro> - 0.6.5-1
+- Version: 0.6.4 → 0.6.5 (latest)
+- Source0: fix URL http→https, fix path 0.2.x → %{vermaj}.x (0.6.x); verified 302→200
+- URL: http→https
+- SPDX: LGPLv2+ → LGPL-2.0-or-later; ExclusiveArch; shadow-utils; systemd macros; %%make_build/%%make_install; %%license; %%ldconfig_scriptlets libs
+
 * Fri May 22 2026 CasjaysDev <rpm-devel@casjaysdev.pro> - 0.6.4-1
 - Fix spec violations: %global for constants, use %{buildroot}
 
