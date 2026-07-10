@@ -3,6 +3,12 @@
 %global ver  0.6.5
 %global vermaj 0.6
 
+%if 0%{?suse_version}
+%global shadow_pkg shadow
+%else
+%global shadow_pkg shadow-utils
+%endif
+
 Summary         : An implementation of an ICAP server
 Name            : %{name}
 Version         : %{ver}
@@ -16,7 +22,7 @@ Source2         : etc---sysconfig---c-icap.sysconfig
 Source3         : etc---tmpfiles.d---c-icap.conf
 Source4         : usr---lib---systemd---system---c-icap.service
 Requires        : %{name}-libs = %{version}-%{release}
-Requires(pre)   : shadow-utils
+Requires(pre)   : %{shadow_pkg}
 BuildRequires   : db4-devel gdbm-devel openldap-devel perl-devel tar zlib-devel bzip2-devel pcre-devel
 BuildRequires   : systemd-rpm-macros
 %{?systemd_requires}
@@ -189,6 +195,9 @@ exit 0 # Always pass
 %{_mandir}/man8/%{name}-stretch.8*
 
 %changelog
+* Sat Jul 05 2026 CasjaysDev <rpm-devel@casjaysdev.pro> - 0.6.5-1
+- Multi-distro pass: guard Requires(pre) shadow-utils vs shadow for openSUSE/SLES via %%shadow_pkg
+
 * Thu Jul 03 2026 CasjaysDev <rpm-devel@casjaysdev.pro> - 0.6.5-1
 - Version: 0.6.4 → 0.6.5 (latest)
 - Source0: fix URL http→https, fix path 0.2.x → %{vermaj}.x (0.6.x); verified 302→200
